@@ -36,7 +36,17 @@ function gaugeColor(pct, limit) {
   return "var(--accent)";
 }
 
+function toast(msg) {
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; }, 2400);
+  setTimeout(() => t.remove(), 2900);
+}
+
 async function runAgent(name) {
+  toast(`▶ ${name} started — working…`);
   try { await fetch(`/api/run/${encodeURIComponent(name)}`, { method: "POST" }); }
   catch (e) { console.error(e); }
   refresh();
@@ -212,8 +222,14 @@ async function refresh() {
       `<td>${fmtTime(r.ts)}</td><td>${r.agent}</td><td><span class="tag">${r.event}</span></td><td>${r.detail || ""}</td>`);
     renderRows("runs-log", runs, (r) =>
       `<td>${r.agent}</td><td><span class="dot dot-${r.status}"></span> ${r.status}</td><td>${r.summary || ""}</td><td>${r.duration_s ? r.duration_s + "s" : "–"}</td>`);
-    renderRows("outputs", outputs, (r) =>
-      `<td>${r.agent}</td><td>${r.title || ""}</td><td>${r.body || ""}</td><td><span class="tag gray">${r.meta || ""}</span></td>`);
+    renderRows("outputs", outputs, (r) => {
+      const isLink = (r.meta || "").startsWith("http");
+      const title = isLink
+        ? `<a href="${r.meta}" target="_blank" rel="noopener">${r.title || ""}</a>`
+        : (r.title || "");
+      const tag = isLink ? "▶ video" : (r.meta || "");
+      return `<td>${r.agent}</td><td>${title}</td><td>${r.body || ""}</td><td><span class="tag${isLink ? "" : " gray"}">${tag}</span></td>`;
+    });
   } catch (e) {
     console.error("refresh failed", e);
   }

@@ -10,6 +10,9 @@ from __future__ import annotations
 
 import html
 import logging
+import xml.etree.ElementTree as ET
+
+import httpx
 
 from agents.base_agent import BaseAgent
 from config import settings
@@ -18,6 +21,16 @@ from core.emailer import send_html
 from core.llm import llm
 
 log = logging.getLogger("AI-Times")
+
+# Popular AI YouTube channels — used for the no-API-key RSS fallback so the
+# agent still pulls REAL, current videos without any credentials.
+AI_CHANNELS = {
+    "Two Minute Papers": "UCbfYPyITQ-7l4upoX8nvctg",
+    "Yannic Kilcher": "UCZHmQk67mSJgfCCTn7xBfew",
+    "AI Explained": "UCNJ1Ymd5yFuUPtn21xtRbbw",
+    "Matt Wolfe": "UChpleBmo18P08aKCIgti38g",
+    "Lex Fridman": "UCSHZKyawb77ixDdsGog4iWA",
+}
 
 
 class AITimesAgent(BaseAgent):
@@ -35,23 +48,32 @@ class AITimesAgent(BaseAgent):
         if not videos:
             return "No videos found."
 
+        # Surface the videos on the dashboard IMMEDIATELY (within seconds of the
+        # fetch) so the user sees results right away — newest sorts on top.
+        for v in reversed(videos):
+            db.save_output(
+                self.name,
+                v["title"],
+                f"{v['channel']} · {v.get('published', '')}",
+                meta=v["url"],            # a URL in meta renders as a clickable link
+            )
+
+        # Then have the local LLM write a blurb per video for the email digest.
         for v in videos:
             v["blurb"] = self._blurb(v)
 
         html_body = self._render(videos)
         sent = send_html("🤖 AI-Times — Today's AI Videos", html_body)
-        db.save_output(
-            self.name,
-            "AI-Times digest",
-            f"{len(videos)} videos",
-            meta="sent" if sent else "outbox",
-        )
-        return f"Digest with {len(videos)} videos ({'emailed' if sent else 'saved to outbox'})."
+        return f"Fetched {len(videos)} videos ({'emailed' if sent else 'saved to outbox'})."
 
     # ------------------------------------------------------------------ #
     def _fetch_videos(self) -> list[dict]:
         if not settings.youtube_api_key:
-            log.warning("No YOUTUBE_API_KEY; using sample feed.")
+            # No API key → pull REAL recent videos from AI channel RSS feeds.
+            rss = self._fetch_rss()
+            if rss:
+                return rss
+            log.warning("RSS returned nothing; using sample feed.")
             return _SAMPLE_FEED[: settings.ai_times_max_results]
         try:
             from googleapiclient.discovery import build
@@ -85,6 +107,39 @@ class AITimesAgent(BaseAgent):
         except Exception as exc:  # noqa: BLE001
             log.warning("YouTube fetch failed (%s); using sample feed.", exc)
             return _SAMPLE_FEED[: settings.ai_times_max_results]
+
+    # ------------------------------------------------------------------ #
+    def _fetch_rss(self) -> list[dict]:
+        """Pull recent videos from AI channel RSS feeds (no API key needed)."""
+        ns = {
+            "a": "http://www.w3.org/2005/Atom",
+            "m": "http://search.yahoo.com/mrss/",
+        }
+        videos: list[dict] = []
+        for name, cid in AI_CHANNELS.items():
+            url = f"https://www.youtube.com/feeds/videos.xml?channel_id={cid}"
+            try:
+                r = httpx.get(url, timeout=10, follow_redirects=True)
+                r.raise_for_status()
+                root = ET.fromstring(r.text)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("RSS fetch failed for %s: %s", name, exc)
+                continue
+            for entry in root.findall("a:entry", ns)[:3]:
+                title = entry.findtext("a:title", default="", namespaces=ns)
+                link = entry.find("a:link", ns)
+                href = link.get("href") if link is not None else ""
+                published = entry.findtext("a:published", default="", namespaces=ns)[:10]
+                desc = ""
+                grp = entry.find("m:group", ns)
+                if grp is not None:
+                    desc = grp.findtext("m:description", default="", namespaces=ns) or ""
+                if title and href:
+                    videos.append({"title": title, "channel": name,
+                                   "published": published, "url": href,
+                                   "description": desc})
+        videos.sort(key=lambda v: v["published"], reverse=True)
+        return videos[: settings.ai_times_max_results]
 
     # ------------------------------------------------------------------ #
     def _blurb(self, video: dict) -> str:

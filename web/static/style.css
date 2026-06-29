@@ -159,6 +159,9 @@ th { text-align: left; color: var(--muted); font-weight: 600; padding: 7px 8px; 
 td { padding: 7px 8px; border-bottom: 1px solid var(--panel-2); vertical-align: top; }
 .tag { padding: 2px 8px; border-radius: 6px; font-size: 11px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .tag.gray { background: var(--panel-2); color: var(--muted); }
+.tag.green { background: var(--green-soft); color: var(--green); }
+.tag.red { background: #fdecec; color: var(--red); }
+.tag.amber { background: #fff7e8; color: #9a6a09; }
 
 .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 

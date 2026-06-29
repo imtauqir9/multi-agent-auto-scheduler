@@ -46,12 +46,14 @@ class CalendarOptimizerAgent(BaseAgent):
 
         html_body = self._render(events, conflicts, plan)
         sent = send_html("🗓️ Calendar Optimizer — Your Optimized Day", html_body)
-        db.save_output(
-            self.name,
-            "Optimized day plan",
-            plan[:300],
-            meta=f"{len(events)} events, {len(conflicts)} conflicts",
-        )
+
+        # Surface today's schedule, the conflicts found, and the optimized plan
+        # (plan saved last so it sorts to the top).
+        for e in events:
+            db.save_output(self.name, e["summary"], f"{e['start']}–{e['end']}", meta="event")
+        for a, b in conflicts:
+            db.save_output(self.name, "Conflict", f"{a} ↔ {b}", meta="conflict")
+        db.save_output(self.name, "Optimized day plan", plan[:400], meta="plan")
         return (
             f"Optimized {len(events)} events, {len(conflicts)} conflict(s) "
             f"({'emailed' if sent else 'saved to outbox'})."

@@ -222,13 +222,17 @@ async function refresh() {
       `<td>${fmtTime(r.ts)}</td><td>${r.agent}</td><td><span class="tag">${r.event}</span></td><td>${r.detail || ""}</td>`);
     renderRows("runs-log", runs, (r) =>
       `<td>${r.agent}</td><td><span class="dot dot-${r.status}"></span> ${r.status}</td><td>${r.summary || ""}</td><td>${r.duration_s ? r.duration_s + "s" : "–"}</td>`);
+    const TAG_CLASS = { gainer: "green", success: "green", loser: "red", urgent: "red", conflict: "amber" };
     renderRows("outputs", outputs, (r) => {
-      const isLink = (r.meta || "").startsWith("http");
+      const meta = r.meta || "";
+      const isLink = meta.startsWith("http");
       const title = isLink
-        ? `<a href="${r.meta}" target="_blank" rel="noopener">${r.title || ""}</a>`
+        ? `<a href="${meta}" target="_blank" rel="noopener">${r.title || ""}</a>`
         : (r.title || "");
-      const tag = isLink ? "▶ video" : (r.meta || "");
-      return `<td>${r.agent}</td><td>${title}</td><td>${r.body || ""}</td><td><span class="tag${isLink ? "" : " gray"}">${tag}</span></td>`;
+      let tag, cls;
+      if (isLink) { tag = "▶ video"; cls = ""; }
+      else { tag = meta; cls = TAG_CLASS[meta] || "gray"; }
+      return `<td>${r.agent}</td><td>${title}</td><td>${r.body || ""}</td><td><span class="tag ${cls}">${tag}</span></td>`;
     });
   } catch (e) {
     console.error("refresh failed", e);

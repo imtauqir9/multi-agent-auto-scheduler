@@ -38,10 +38,17 @@ class WallstreetWolfAgent(BaseAgent):
         html_body = self._render(quotes, commentary)
         sent = send_html("📈 Wallstreet Wolf — Daily Market Report", html_body)
 
-        movers = sorted(quotes, key=lambda q: abs(q["change_pct"]), reverse=True)[:3]
-        for q in movers:
-            db.save_output(self.name, q["ticker"], f"{q['change_pct']:+.2f}%", meta=str(q["price"]))
+        # Surface the FULL watchlist on the dashboard (losers first so the
+        # biggest gainers sort to the top), then the LLM commentary on top.
+        for q in sorted(quotes, key=lambda x: x["change_pct"]):
+            tag = "gainer" if q["change_pct"] >= 0 else "loser"
+            db.save_output(
+                self.name, q["ticker"],
+                f"${q['price']:.2f}  ({q['change_pct']:+.2f}%)", meta=tag,
+            )
+        db.save_output(self.name, "Market commentary", commentary[:300], meta="LLM")
 
+        movers = sorted(quotes, key=lambda q: abs(q["change_pct"]), reverse=True)
         return (
             f"Report on {len(quotes)} tickers "
             f"({'emailed' if sent else 'saved to outbox'}); "

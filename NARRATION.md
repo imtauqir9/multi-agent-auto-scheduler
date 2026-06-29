@@ -59,22 +59,24 @@ right now."
 
 ---
 
-## [4:30] Run the agents — click Run now on each
-"Let me trigger some agents. [click Run now on AI-Times] AI-Times fetches the latest AI YouTube
-videos, and the local model writes a one-line summary of why each one matters, then builds an
-HTML email digest. [show the result in the outputs table or the outbox HTML]
+## [4:30] Run the agents — click each one, point at the outputs table
+"Let me trigger the agents. Everything they produce shows up live in this 'Latest agent outputs'
+panel at the bottom.
 
-[click Run now on Mailman] Mailman reads my inbox, and the local model classifies each email —
-urgent, finance, newsletter, and so on. You can see the classifications appearing here: a
-production alert tagged urgent, an invoice tagged finance, a personal email tagged personal.
+[click AI-Times in the sidebar — a toast pops up, its node animates] AI-Times pulls the latest AI
+YouTube videos — these are real, current uploads from channels like Two Minute Papers and AI
+Explained — and each title here is a clickable link to the video. The local model also writes a
+one-line summary of each for the email digest.
 
-[click Run now on Calendar-Optimizer] This is my custom agent, the Calendar Optimizer. It reads
-today's calendar, detects overlapping meetings deterministically — here it found two conflicts —
-and then the local model produces an optimized day plan that resolves the overlaps and protects a
-focus block.
+[click Mailman] Mailman reads the inbox and the local model classifies every email. You can see
+them tagged here — a production alert in red as urgent, an invoice as finance, a sale as promotion.
 
-[click Run now on Wallstreet-Wolf] And Wallstreet Wolf pulls quotes for over twenty stocks and the
-model writes a short market commentary."
+[click Wallstreet-Wolf] Wallstreet Wolf pulls quotes for over twenty stocks. Here's the full
+watchlist — gainers tagged green, losers tagged red — and the model's market commentary on top.
+
+[click Calendar-Optimizer] And this is my custom agent, the Calendar Optimizer. It reads today's
+calendar, flags overlapping meetings — here are the conflicts in amber — and the local model writes
+an optimized day plan that resolves them and protects a focus block."
 
 ---
 

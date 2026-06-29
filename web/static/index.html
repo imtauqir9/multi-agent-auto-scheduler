@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Agent Platform · Mission Control</title>
+  <link rel="stylesheet" href="/static/style.css?v=2" />
+</head>
+<body>
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">◈</div>
+      <div>
+        <div class="brand-title">Orchestrator</div>
+        <div class="brand-sub">multi-agent</div>
+      </div>
+      <span id="side-llm-dot" class="dot dot-idle" style="margin-left:auto;"></span>
+    </div>
+
+    <div class="side-label">Agents</div>
+    <nav id="side-agents" class="side-agents"></nav>
+
+    <div class="side-foot">
+      <div id="side-model" class="side-model">qwen3 · local</div>
+      <div class="side-sys">All inference on-device</div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+
+    <!-- top bar -->
+    <div class="topbar">
+      <div>
+        <div class="top-title">Orchestrator</div>
+        <div id="top-meta" class="top-meta">localhost · uptime –</div>
+      </div>
+      <div class="top-right">
+        <span id="health-pill" class="pill pill-green">● All systems nominal</span>
+        <span id="model-pill" class="pill pill-soft">qwen3 · local</span>
+        <span id="running-pill" class="pill pill-ghost">0 running</span>
+      </div>
+    </div>
+
+    <!-- hero -->
+    <section class="hero">
+      <div>
+        <div class="hero-eyebrow"><span id="greeting">Good day</span> · Mission Control</div>
+        <h1 class="hero-title">Multi-Agent Platform</h1>
+        <div id="hero-sub" class="hero-sub">● local inference · Qwen3 via Ollama</div>
+      </div>
+      <div class="hero-clock">
+        <div id="clock" class="clock">--:--:--</div>
+        <div id="date" class="date">—</div>
+      </div>
+    </section>
+
+    <!-- stat cards -->
+    <section class="stats">
+      <div class="stat">
+        <div class="stat-k">▣ Agents running</div>
+        <div id="st-agents" class="stat-v">0</div>
+        <div id="st-agents-sub" class="stat-sub">0 managed</div>
+      </div>
+      <div class="stat">
+        <div class="stat-k">▰ CPU load</div>
+        <div id="st-cpu" class="stat-v">–</div>
+        <div class="stat-bar"><div id="st-cpu-bar" class="stat-bar-fill"></div></div>
+      </div>
+      <div class="stat">
+        <div class="stat-k">▤ Memory</div>
+        <div id="st-ram" class="stat-v">–</div>
+        <div class="stat-bar"><div id="st-ram-bar" class="stat-bar-fill"></div></div>
+      </div>
+      <div class="stat">
+        <div class="stat-k">⌗ Threads</div>
+        <div id="st-threads" class="stat-v">–</div>
+        <div class="stat-sub">active</div>
+      </div>
+      <div class="stat">
+        <div class="stat-k">◷ Uptime</div>
+        <div id="st-uptime" class="stat-v">0m</div>
+        <div class="stat-sub">since boot</div>
+      </div>
+    </section>
+
+    <div id="throttle" class="throttle hidden"></div>
+
+    <!-- orchestration graph -->
+    <section class="card graph-card">
+      <div class="card-head">
+        <div>
+          <h2>Agent orchestration</h2>
+          <p class="card-sub">The orchestrator drives every agent · a link animates only while that agent is running.</p>
+        </div>
+        <span id="graph-running" class="pill pill-ghost">0 running</span>
+      </div>
+      <svg id="graph" viewBox="0 0 960 320" preserveAspectRatio="xMidYMid meet"></svg>
+    </section>
+
+    <!-- scheduler -->
+    <section class="card">
+      <h2>LLM scheduler <span class="muted-tag">single shared model · deadlock-safe</span></h2>
+      <div class="sched-row">
+        <div><span class="k">Queued</span><span id="sched-queued" class="v">0</span></div>
+        <div><span class="k">Active</span><span id="sched-active" class="v">idle</span></div>
+        <div><span class="k">Workers</span><span id="sched-workers" class="v">–</span></div>
+        <div><span class="k">Held locks</span><span id="sched-locks" class="v">none</span></div>
+      </div>
+    </section>
+
+    <!-- agent cards -->
+    <section>
+      <h2 class="section-h">Agents</h2>
+      <div id="agents" class="agent-grid"></div>
+    </section>
+
+    <!-- logs -->
+    <section class="grid-2">
+      <div class="card">
+        <h2>Scheduler activity</h2>
+        <div class="table-wrap">
+          <table id="schedule-log"><thead><tr><th>Time</th><th>Agent</th><th>Event</th><th>Detail</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Recent agent runs</h2>
+        <div class="table-wrap">
+          <table id="runs-log"><thead><tr><th>Agent</th><th>Status</th><th>Summary</th><th>Dur</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Latest agent outputs</h2>
+      <div class="table-wrap">
+        <table id="outputs"><thead><tr><th>Agent</th><th>Title</th><th>Detail</th><th>Tag</th></tr></thead><tbody></tbody></table>
+      </div>
+    </section>
+
+    <footer>Auto-refreshing every 3s · 100% local · Qwen3 / Ollama</footer>
+  </main>
+</div>
+
+<script src="/static/app.js?v=2"></script>
+</body>
+</html>
